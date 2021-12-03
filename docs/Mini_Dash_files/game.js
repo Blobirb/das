@@ -6334,6 +6334,7 @@ var Game;
             if (Level.speedrun) {
                 new Game.SpeedrunTimer();
             }
+            new Game.LevelTimer();
             new Game.ExitButton();
             new Game.LevelText();
             Game.LevelShake.init();
@@ -6357,10 +6358,12 @@ var Game;
             else if (Level.index == 5) {
                 new Game.TutorialD();
             }
+            
             new Game.LevelAdLoader();
             return _this;
         }
         Level.prototype.onReset = function () {
+            Game.Level.countStepsLevel = 0;
             _super.prototype.onReset.call(this);
             //triggerActions("play");
         };
@@ -7518,6 +7521,99 @@ var Game;
     }(Engine.Entity));
     Game.SpeedrunTimer = SpeedrunTimer;
 })(Game || (Game = {}));
+
+var Game;
+(function (Game) {
+    var LevelTimer = /** @class */ (function (_super) {
+        __extends(LevelTimer, _super);
+        function LevelTimer() {
+            var _this = _super.call(this) || this;
+            _this.text = new Utils.Text();
+            /*
+            if(Level.index != 1 && Level.index != 24){
+                var dialog = new ColorDialog("normal", 0, 1 - 50, 43, 10);
+                if(
+                    Level.index == 3
+                    || Level.index == 5
+                    || Level.index == 8
+                    || Level.index == 9
+                    || Level.index == 13
+                    || Level.index == 21
+                    || Level.index == 25
+                ){
+                    dialog.setAlpha(EXTRA_DIALOG_ALPHA);
+                }
+            }
+            */
+            _this.text.font = Game.Level.speedrun ? Game.FontManager.b : Game.FontManager.c;
+            _this.text.scale = (Game.Level.speedrun ? 0.6 : 1);
+            _this.text.enabled = true;
+            _this.text.pinned = true;
+            _this.text.str = Game.Level.countStepsLevel == 0 ? "0.000" : LevelTimer.getTextValue(Game.Level.countStepsLevel);
+            _this.text.xAlignBounds = Utils.AnchorAlignment.MIDDLE;
+            _this.text.xAlignView = Utils.AnchorAlignment.MIDDLE;
+            _this.text.yAlignBounds = Utils.AnchorAlignment.START;
+            _this.text.yAlignView = Utils.AnchorAlignment.START;
+            _this.text.xAligned = 0;
+            var offset = 0;
+            if (Game.Level.index == 1) {
+                offset = 38.5;
+            }
+            else if (Game.Level.index == 2) {
+                offset = 34;
+            }
+            else if (Game.Level.index == 4) {
+                offset = 24;
+            }
+            else if (Game.Level.index == 5) {
+                offset = 17;
+            }
+            _this.text.yAligned = Game.Y_ARROWS_GAME_BUTTONS + 1 + 10 + offset + (Game.Level.speedrun ? 7 : 0);
+            return _this;
+        }
+        LevelTimer.getTextValue = function (stepsTime) {
+            var text = "9999.999";
+            if (stepsTime > 0) {
+                var seconds = new Int32Array([stepsTime / 60]);
+                if (seconds[0] <= 9999) {
+                    var milliseconds = new Int32Array([(stepsTime - seconds[0] * 60) * 1000.0 * (1.0 / 60.0)]);
+                    text = seconds[0] + ".";
+                    if (milliseconds[0] < 10) {
+                        text += "00" + milliseconds[0];
+                    }
+                    else if (milliseconds[0] < 100) {
+                        text += "0" + milliseconds[0];
+                    }
+                    else {
+                        text += milliseconds[0];
+                    }
+                }
+            }
+            //text = "9999.999";
+            return text;
+        };
+        LevelTimer.getValue = function (stepsTime) {
+            var value = 9999999;
+            if (stepsTime > 0) {
+                var seconds = new Int32Array([stepsTime / 60]);
+                if (seconds[0] <= 9999) {
+                    var milliseconds = new Int32Array([(stepsTime - seconds[0] * 60) * 1000.0 * (1.0 / 60.0)]);
+                    value = seconds[0] * 1000 + milliseconds[0];
+                }
+            }
+            return value;
+        };
+        LevelTimer.prototype.onStepUpdate = function () {
+            if (!Game.Player.instance.winning && !Game.Player.instance.losing && !Game.SceneFreezer.stoped) {
+                Game.Level.countStepsLevel += 1;
+                this.text.str = LevelTimer.getTextValue(Game.Level.countStepsLevel);
+            }
+        };
+        return LevelTimer;
+    }(Engine.Entity));
+    Game.LevelTimer = LevelTimer;
+})(Game || (Game = {}));
+
 ///<reference path="../../../System/Entity.ts"/>
 var Game;
 (function (Game) {
